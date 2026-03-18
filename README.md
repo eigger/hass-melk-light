@@ -9,7 +9,7 @@ Home Assistant custom integration for **MELK Light Bar** (`melk_light`).
 <table>
   <tr>
     <td align="center" valign="bottom">
-      <img width="140"
+      <img width="270"
            alt="Turn on device demo"
            src="https://raw.githubusercontent.com/eigger/hass-melk-light/master/docs/images/image1.jpg" />
     </td>
