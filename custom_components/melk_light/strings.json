@@ -1,0 +1,22 @@
+{
+  "title": "MELK Light Bar",
+  "config": {
+    "step": {
+      "user": {
+        "title": "MELK Light Bar",
+        "description": "Select a discovered MELK light bar to add.",
+        "data": {
+          "address": "Device"
+        }
+      },
+      "bluetooth_confirm": {
+        "title": "MELK Light Bar",
+        "description": "Do you want to add {name}?"
+      }
+    },
+    "abort": {
+      "no_devices_found": "No MELK devices found.",
+      "not_supported": "Device not supported."
+    }
+  }
+}

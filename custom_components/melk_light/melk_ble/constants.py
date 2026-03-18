@@ -1,0 +1,11 @@
+"""BLE/protocol constants for MELK LED bar."""
+
+SERVICE_UUID = "0000fff0-0000-1000-8000-00805f9b34fb"
+CHARACTERISTIC_UUID = "0000fff3-0000-1000-8000-00805f9b34fb"
+DEVICE_NAME_PREFIX = "MELK-"
+
+# Protocol bytes
+HEADER = 0x7E
+FOOTER = 0xEF
+PAD = 0xFF
+
