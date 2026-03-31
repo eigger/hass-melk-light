@@ -126,7 +126,7 @@ class MelkLedDevice:
         finally:
             # With write-without-response, allow the controller time to flush
             # the ATT Write Command before tearing down the connection.
-            await asyncio.sleep(0.08)
+            await asyncio.sleep(0.5)
             await self.disconnect()
 
     # ── Commands (each sends exactly one packet) ──────────────
