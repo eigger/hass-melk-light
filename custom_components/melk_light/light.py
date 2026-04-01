@@ -85,8 +85,10 @@ class MelkLightEntity(MelkBaseEntity, LightEntity):
 
         try:
             async with self._dev.connected(ble_device):
-                if not self._dev.state.is_on:
-                    await self._dev.power(True)
+                # Always send power(True) first so the device is guaranteed to
+                # be on before we apply color/brightness.  Cached state may be
+                # stale (e.g. device was physically switched off).
+                await self._dev.power(True)
 
                 if ATTR_BRIGHTNESS in kwargs:
                     await self._dev.set_brightness(kwargs[ATTR_BRIGHTNESS])

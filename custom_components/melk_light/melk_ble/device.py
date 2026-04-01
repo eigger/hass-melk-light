@@ -30,6 +30,13 @@ from .protocol import (
 
 _LOGGER = logging.getLogger(__name__)
 
+# The FFF3 characteristic is Write-Without-Response only (no ACK).
+# We improve reliability by sending each packet _WRITE_REPEAT_COUNT times,
+# matching the reference app's 100 ms periodic-timer approach.
+_WRITE_REPEAT_COUNT = 2    # how many times to send each packet (app: 1x, +1 for ESPHome proxy)
+_WRITE_REPEAT_DELAY = 0.1  # seconds between repeats (≈ app's 100 ms interval)
+_POST_CONNECT_DELAY = 0.3  # settle time after a fresh BLE connection
+
 
 @dataclass
 class MelkState:
@@ -58,6 +65,7 @@ class MelkLedDevice:
         self.address = address
         self.client: BleakClient | None = None
         self.name: str | None = None
+        self._ble_device: BLEDevice | None = None  # stored for reconnect
         self._lock = asyncio.Lock()
         self._last_tx = 0.0
         self.state = MelkState()
@@ -70,6 +78,7 @@ class MelkLedDevice:
         return bool(self.client and self.client.is_connected)
 
     async def connect(self, ble_device: BLEDevice) -> bool:
+        self._ble_device = ble_device  # always refresh so reconnect is possible
         if self.is_connected():
             return True
         try:
@@ -101,33 +110,61 @@ class MelkLedDevice:
             self.client = None
 
     async def _write(self, data: bytes) -> None:
-        """Write with ~100 ms minimum gap (per protocol notes)."""
-        if not self.client or not self.client.is_connected:
-            raise RuntimeError("BLE client not connected")
+        """Write Without Response, sent _WRITE_REPEAT_COUNT times for reliability.
+
+        The FFF3 characteristic only supports Write Without Response
+        (GATT error 3 / ATT_ERR_WRITE_NOT_PERMITTED with response=True).
+        There is no ACK, so we compensate by sending each packet multiple
+        times with a ~100 ms gap — matching the reference app's timer approach.
+        On connection loss the client is reconnected before the next send.
+        """
         async with self._lock:
             now = time.monotonic()
             gap = now - self._last_tx
-            if gap < 0.1:
-                await asyncio.sleep(0.1 - gap)
-            self._last_tx = time.monotonic()
-            _LOGGER.debug("TX %s", data.hex())
-            await self.client.write_gatt_char(CHARACTERISTIC_UUID, data, response=False)
+            if gap < _WRITE_REPEAT_DELAY:
+                await asyncio.sleep(_WRITE_REPEAT_DELAY - gap)
+
+            for n in range(1, _WRITE_REPEAT_COUNT + 1):
+                # Reconnect if the connection was lost between sends.
+                if not self.client or not self.client.is_connected:
+                    if self._ble_device is None:
+                        raise RuntimeError("No BLE device available for reconnect")
+                    _LOGGER.debug(
+                        "Reconnecting before send %d/%d …", n, _WRITE_REPEAT_COUNT
+                    )
+                    if not await self.connect(self._ble_device):
+                        raise RuntimeError(
+                            f"Reconnect failed before send {n}/{_WRITE_REPEAT_COUNT}"
+                        )
+                    await asyncio.sleep(_POST_CONNECT_DELAY)
+
+                self._last_tx = time.monotonic()
+                _LOGGER.debug("TX [%d/%d] %s", n, _WRITE_REPEAT_COUNT, data.hex())
+                await self.client.write_gatt_char(
+                    CHARACTERISTIC_UUID, data, response=False
+                )
+
+                if n < _WRITE_REPEAT_COUNT:
+                    await asyncio.sleep(_WRITE_REPEAT_DELAY)
 
     async def ensure_connected(self, ble_device: BLEDevice) -> None:
+        was_connected = self.is_connected()
         if not await self.connect(ble_device):
             raise RuntimeError(f"Unable to connect to {ble_device.address}")
+        if not was_connected:
+            await asyncio.sleep(_POST_CONNECT_DELAY)
 
     @asynccontextmanager
     async def connected(self, ble_device: BLEDevice):
-        """Connect for a command session, then disconnect."""
+        """Ensure the device is connected for a command block.
+
+        The connection is kept alive after the block exits so that subsequent
+        commands can reuse it without paying the reconnect cost each time.
+        Call disconnect() explicitly (e.g. on integration unload) when the
+        connection is no longer needed.
+        """
         await self.ensure_connected(ble_device)
-        try:
-            yield
-        finally:
-            # With write-without-response, allow the controller time to flush
-            # the ATT Write Command before tearing down the connection.
-            await asyncio.sleep(0.5)
-            await self.disconnect()
+        yield
 
     # ── Commands (each sends exactly one packet) ──────────────
 
