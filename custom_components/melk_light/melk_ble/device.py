@@ -36,6 +36,7 @@ _LOGGER = logging.getLogger(__name__)
 _WRITE_REPEAT_COUNT = 2    # how many times to send each packet (app: 1x, +1 for ESPHome proxy)
 _WRITE_REPEAT_DELAY = 0.1  # seconds between repeats (≈ app's 100 ms interval)
 _POST_CONNECT_DELAY = 0.3  # settle time after a fresh BLE connection
+_DISCONNECT_TIMEOUT = 30.0 # seconds of inactivity before dropping the connection
 
 
 @dataclass
@@ -69,10 +70,28 @@ class MelkLedDevice:
         self._lock = asyncio.Lock()
         self._last_tx = 0.0
         self.state = MelkState()
+        self._disconnect_timer: asyncio.TimerHandle | None = None
 
     def _on_disconnect(self, client: BleakClient) -> None:  # noqa: ARG002
         _LOGGER.debug("Disconnected from MELK device %s", self.address)
         self.client = None
+        if self._disconnect_timer:
+            self._disconnect_timer.cancel()
+            self._disconnect_timer = None
+
+    def _reset_disconnect_timer(self) -> None:
+        if self._disconnect_timer:
+            self._disconnect_timer.cancel()
+            
+        loop = asyncio.get_running_loop()
+        self._disconnect_timer = loop.call_later(
+            _DISCONNECT_TIMEOUT,
+            lambda: asyncio.create_task(self._auto_disconnect())
+        )
+
+    async def _auto_disconnect(self) -> None:
+        _LOGGER.debug("No commands sent for %s seconds, automatically disconnecting %s", _DISCONNECT_TIMEOUT, self.address)
+        await self.disconnect()
 
     def is_connected(self) -> bool:
         return bool(self.client and self.client.is_connected)
@@ -82,6 +101,7 @@ class MelkLedDevice:
         if self.is_connected():
             return True
         try:
+            _LOGGER.debug("Connecting to MELK device %s", self.address)
             self.client = await establish_connection(
                 BleakClient,
                 ble_device,
@@ -92,6 +112,7 @@ class MelkLedDevice:
                 return False
             if not self.name:
                 self.name = ble_device.name or DEVICE_NAME_PREFIX.rstrip("-")
+            _LOGGER.debug("Connected to MELK device %s", self.address)
             return True
         except Exception as err:
             _LOGGER.warning("Failed to connect to %s: %s", ble_device.address, err)
@@ -99,10 +120,15 @@ class MelkLedDevice:
             return False
 
     async def disconnect(self) -> None:
+        if self._disconnect_timer:
+            self._disconnect_timer.cancel()
+            self._disconnect_timer = None
+
         if not self.client:
             return
         try:
             if self.client.is_connected:
+                _LOGGER.debug("Disconnecting from MELK device %s...", self.address)
                 await self.client.disconnect()
         except Exception as err:
             _LOGGER.debug("Disconnect error: %s", err)
@@ -160,11 +186,19 @@ class MelkLedDevice:
 
         The connection is kept alive after the block exits so that subsequent
         commands can reuse it without paying the reconnect cost each time.
+        It will automatically disconnect after 30 seconds of inactivity.
         Call disconnect() explicitly (e.g. on integration unload) when the
         connection is no longer needed.
         """
+        if self._disconnect_timer:
+            self._disconnect_timer.cancel()
+            self._disconnect_timer = None
+
         await self.ensure_connected(ble_device)
-        yield
+        try:
+            yield
+        finally:
+            self._reset_disconnect_timer()
 
     # ── Commands (each sends exactly one packet) ──────────────
 
