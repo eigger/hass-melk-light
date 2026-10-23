@@ -64,6 +64,7 @@
 ## 지원
 
 - [Issues](https://github.com/eigger/hass-melk-light/issues): 버그를 신고하거나 기능을 요청하세요.
+- [Discussions](https://github.com/eigger/hass-melk-light/discussions): 질문하고 사용 경험을 공유하세요.
 <!-- hass-standards:support:end -->
 
 <!-- hass-standards:related-projects:start -->

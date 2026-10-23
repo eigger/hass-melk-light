@@ -22,7 +22,7 @@
       "ko": "**MELK Light Bar** (`melk_light`)용 Home Assistant 커스텀 통합입니다."
     },
     "issues": true,
-    "discussions": false,
+    "discussions": true,
     "license_name": "MIT License",
     "license_notices": {
       "en": [],

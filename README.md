@@ -64,6 +64,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the real HA test environments and com
 ## Support
 
 - [Issues](https://github.com/eigger/hass-melk-light/issues): Report bugs or request features.
+- [Discussions](https://github.com/eigger/hass-melk-light/discussions): Ask questions and share your experience.
 <!-- hass-standards:support:end -->
 
 <!-- hass-standards:related-projects:start -->
