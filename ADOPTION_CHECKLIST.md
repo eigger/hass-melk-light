@@ -7,7 +7,7 @@
 - Implementer: root. Independent reviewer: independent_review under GOV-05 for lifecycle/actions and CI input changes.
 - Reviewed implementation: `2e7fa7aff0fb6601c0810044a6941b7d98c85888`; validator/docs follow-up `199f1e118a6d9b3475b155241da67b58adfe440e`. Subsequent translated-error and metadata changes rechecked below.
 - Minimum support before/after: HA2025.11.0 from hacs.json, preserved. Current tests HA2026.10.2 are not a support-minimum change.
-- Status: integration migration in progress until remote checks/merge and central final status are recorded. No approved exceptions.
+- Status: implementation and applicable automated checks complete; PR #5 awaits the final documentation commit checks and authorized squash merge. No approved exceptions. Central status is updated before/after merge; physical limitations below remain.
 
 ## Rule-by-rule review (central template rows)
 
@@ -15,8 +15,8 @@
 |---|---|---|---|
 | GOV-01, GOV-02 | `STANDARDS.md`에 표준 SHA·profile·실제 기본 브랜치·예외 기록, workflow/action은 검토 SHA로 고정 | PASS | STANDARDS.md: reviewed SHA, integration/ha profile, master branch, no approved exceptions. Generated callers pinned to reviewed SHA; release action has separate documented reviewed SHA. |
 | GOV-03 | 새 표준 채택 변경의 영향·이관 방법과 명시적 채택 PR 확인. 규칙 자체를 변경하면 공통 CHANGELOG 기록 | PASS | Explicit adoption PR #5, docs/adoption-plan.md and CHANGELOG.md; central rules are not changed. |
-| GOV-04 | 중앙 표에 작업 시작·종료·의미 있는 상태 변화 상태, 담당·적용 내용·검증/리뷰 근거 링크·남은 작업 갱신, 타 리포 기록 보존 | TODO | Central start recorded at d023678a3016ea441b0f556524882ba03ca81c6c; final merge/status update pending. |
-| GOV-05 | 자체/독립 리뷰 방식·선택 근거 기록, 큰 구조·HA 동작·공용 CI 실행 로직 변경의 독립 리뷰, 지적 수정·영향 검사 재실행 | PASS | Independent review of2e7fa7a and199f1e1: no remaining actionable findings. DOC-07 reporting details fixed; final translation-error follow-up review pending below. |
+| GOV-04 | 중앙 표에 작업 시작·종료·의미 있는 상태 변화 상태, 담당·적용 내용·검증/리뷰 근거 링크·남은 작업 갱신, 타 리포 기록 보존 | PASS | Central start d023678a3016ea441b0f556524882ba03ca81c6c and verified-progress df4458459816caf5b0ee19d1a0af526aae4a0067 update only this repository row; final merge is reflected in the linked central status after squash. |
+| GOV-05 | 자체/독립 리뷰 방식·선택 근거 기록, 큰 구조·HA 동작·공용 CI 실행 로직 변경의 독립 리뷰, 지적 수정·영향 검사 재실행 | PASS | Independent review of2e7fa7a and199f1e1: no remaining actionable findings. DOC-07 reporting details fixed; translated-error follow-up5bcbad7 independently reviewed with no runtime findings; trailing document blank line fixed. |
 | HA-01, HA-13 | `custom_components/<domain>/`와 domain 일치, 필요한 모듈·공개 API·생명주기는 Core 대응 구조 | PASS | custom_components/melk_light plus empty custom_components/__init__.py; config_flow/entity/light and separate protocol package; actual HA loader tests. |
 | HA-02 | manifest 필드·정렬·동작 선언, 실제 제품 categories 1–3개·주 분류 순서·공식 slug·선택 근거·categories_review 일치 또는 entity/system/virtual 키 생략 이유, 공식 품질 등급 자가 표기 없음 | PASS | Manifest domain/name then sorted fields; issue_tracker, requirements, categories=[lighting]. Physical RGB light bar use, not platform inference; matching categories_review. assumed_state matches write-only state. No quality claim. |
 | HA-03 (권장) | 공통 상수·설정·갱신·플랫폼 역할 및 프로토콜 경계에 맞게 모듈 구성 | PASS | Existing module roles preserved; no unnecessary coordinator or platform added. |
@@ -35,11 +35,11 @@
 | DEP-07, CI-06 | 실제 사용하는 HA 구성요소의 requirements·필수 재귀 의존성·선택 로딩 경로 설치, resolver·`pip check` 통과 | PASS | Pinned central installer resolves manifest/test requirements with actual installed HA bluetooth/bluetooth_adapters/usb recursive requirements, pip check PASS. Minimum pycares<5 compatibility constraint documented. |
 | DEP-02, DEP-03, DEP-08 | 의존성 추가/변경의 버전·extras·marker·선언 위치·지원 플랫폼·라이선스 검토, 실제 HA 테스트와 문서 갱신 | PASS | blesession0.9.0 PyPI metadata: Python>=3.13, bleak>=0.22, bleak-retry-connector>=3.6, MIT; matches minimum HA Python. Internal >= contract backed by exact floor CI; no extras/markers introduced. |
 | HACS-01, HACS-02 | 루트 README/LICENSE/hacs.json, 검증한 최소 HA, 실제 배포 구조와 필요한 옵션 일치 | PASS | README/LICENSE/hacs.json, unchanged support minimum/version0.1.3, custom_components structure and melk_light.zip contract preserved. |
-| HACS-03, HACS-05 | Default 여부는 목록 근거로 확인, [로컬 brand/icon.png 또는 원격 brands 근거](https://github.com/eigger/hass-repo-standards/blob/main/docs/hacs.md)와 HACS/Hassfest 실제 실행, ignore는 이유·해제 조건 기록 | TODO | HACS Custom; local original256x256 brand/icon.png inspected and licensed. Remote HACS PASS on199f1e1. Published Hassfest image rejected categories; official source build result pending. |
+| HACS-03, HACS-05 | Default 여부는 목록 근거로 확인, [로컬 brand/icon.png 또는 원격 brands 근거](https://github.com/eigger/hass-repo-standards/blob/main/docs/hacs.md)와 HACS/Hassfest 실제 실행, ignore는 이유·해제 조건 기록 | PASS | HACS Custom; local original256x256 brand/icon.png inspected and licensed. Remote HACS and full official source-built Hassfest PASS at5bcbad7 in run39914626140; published-image failure recorded below without suppressing validation. |
 | HACS-06 (권장) | description·topics·issue 경로·brands 및 사용하는 HACS 필드 지원 확인 | PASS | gh repo read confirms description/topics/Issues/Discussions; no repository setting changed. Local original icon metadata in brand/README.md; older HA UI display unverified. |
 | CI-01, CI-02 | Validate/Tests 공통화, 확장 job 유지, 공용 파일명·표시 이름·PR 대상 제한 없는 기본 이벤트·실제 기본 브랜치 push·dispatch·기존 schedule, 전용 CI 명명 형식 | PASS | Canonical Validate/Tests/Update dependencies filenames/events rendered from central templates; actual master push, unrestricted PR, dispatch and schedules; existing Release workflow preserved. |
 | CI-03, CI-05, CI-08 | 최소 권한·checkout 자격증명 비보존·timeout·concurrency, full SHA·갱신 관리, 비신뢰 입력·secrets 경계 | PASS | Central reusable jobs preserve read permissions, timeout and credential-free checkout; full reviewed SHAs. Only updater/release jobs have write permissions. actionlint1.7.12 PASS. |
-| CI-04, CI-07, CI-12 | 실패를 숨기지 않는 실제 `ha` 필수 테스트, 버전별 환경·cache·Ruff 설정과 required checks 이름 확인 | TODO | Actual ha jobs, four environment matrix, no continue-on-error; ruff0.17.1 lint+format PASS. Branch protection API returns404 Branch not protected; no checks renamed/settings changed. Final remote checks pending. |
+| CI-04, CI-07, CI-12 | 실패를 숨기지 않는 실제 `ha` 필수 테스트, 버전별 환경·cache·Ruff 설정과 required checks 이름 확인 | PASS | Actual ha jobs and four environment matrix PASS at5bcbad7 in run39914626173, no continue-on-error; ruff0.17.1 lint+format PASS. Branch protection API returns404 Branch not protected; no protection settings changed. |
 | DEP-03, DEP-04, CI-09 | updater의 선택 package·연산자/extras/marker 보존, 안정 버전·major 정책, 실제 기본 브랜치·단일 bot branch·PR만 제안 | PASS | Updater selects only blesession; dry-run: Requirements are current; no change. Reviewed shared action preserves operator/extras/markers, rejects major/downgrade and uses one bot branch. |
 | CI-09, CI-10, DEP-08 | 변경 tree의 새 하한·실제 HA 검증 후 PR 동기화, 실패 시 중단·변경 없음 시 기존 PR 정리, 후속 required checks 충족 방식 확인 | PASS | Shared updater validates actual changed manifest/floor with HA tests before PR sync. GITHUB_TOKEN follow-up CI limitation documented in central CI-10; no automatic merging. No package update available, so no update PR generated or workflow manually dispatched. |
 | DOC-01, DOC-02, DOC-06 | 중앙 header/support/related-projects/license 관리 영역의 정확한 형식, 기존 공통 내용·고지 보존, 영역 밖 순서·제목·본문 유지, 양언어 같은 구조·내용·상호 링크, 번역 의미·누락 리뷰(GOV-05), 실제 활성 지원 링크·실제 라이선스 | PASS | Central renderer managed blocks; original image table/body order/features/install/notes/buy link retained, complete Korean counterpart. English CONTRIBUTING linked in both; remote Issues/Discussions verified. MIT license preserved; independent bilingual review. |
@@ -66,7 +66,7 @@ Each separate environment used the central `actions/python-environment/install.p
 | minimum HA current packages |3.13.15 /2025.11.0 /0.13.294 |0.9.0 /1.0.1 /4.4.3 /4.11.0 |18 passed, pip check PASS |
 | minimum HA exact floor |3.13.15 /2025.11.0 /0.13.294 |0.9.0 /1.0.1 /4.4.3 /4.11.0 |18 passed, pip check PASS |
 
-Logs: WSL `/home/eigger/.cache/melk-adoption-20261023/{current,current-floor,minimum-current,minimum}.log`, at implementation2e7fa7a (same runtime tree as199f1e1). The later translated HA exception and assumed_state metadata follow-up reran actual current/minimum HA suites with18 passed each; exact-floor reruns and final CI are recorded below.
+Logs: WSL `/home/eigger/.cache/melk-adoption-20261023/{current,current-floor,minimum-current,minimum}.log`, at implementation2e7fa7a (same runtime tree as199f1e1). All four environments were rerun after the translated HA exception and assumed_state metadata follow-up at5bcbad7:18 passed each and pip check PASS. Installed versions remain as tabulated above; logs at the same paths now refer to5bcbad7.
 
 Initial minimum setup failed because HA's aiodns3.x imports result types removed in pycares5. The resolver compatibility constraint pycares<5 fixes that without changing runtime requirements or HA minimum. The old minimum HA test plugin also mocks an older BlueZ import path: the domain fixture additionally mocks only `habluetooth.channels.bluez.MGMTBluetoothCtl.setup` (hardware management socket); real HA manager/setup remains active. Failed runs were not treated as PASS.
 
@@ -77,15 +77,22 @@ Initial minimum setup failed because HA's aiodns3.x imports result types removed
 - Updater dry-run selects blesession and reports current requirements, no change; no manual workflow dispatch or update PR created.
 - Original256x256 PNG icon authored for this repository; no external artwork. Visually inspected; source/license notes in brand/README.md.
 - Branch protection API:404 Branch not protected. Existing required checks/settings are not modified.
-- Current archive verification and final remote CI links: pending below. No release/tag/upload is authorized by adoption alone.
+- Actual clean5bcbad7 archive:17 files at ZIP root, byte-for-byte checkout match, integrity PASS; SHA256 `5ee93225cac058f7b690a1939ce55ebfb273308b58093069a4f156d704e8fce7`. Output `C:/Users/eigger/AppData/Local/Temp/melk-adoption-5bcbad7/melk_light.zip`. No release/tag/upload is authorized by adoption alone.
 
 ## Independent review and remaining scope
 
-Independent review of2e7fa7a: no remaining actionable findings after DOC-07 report details were fixed; verified all four18-pass logs and pip check. Review of199f1e1: supported full-SHA official Hassfest source path and active bilingual Discussions links accepted, no new findings. Reviewer also confirmed assumed_state is the accurate IoT class for this write-only lamp. Final translated-error follow-up review and remote checks pending.
+Independent review of2e7fa7a: no remaining actionable findings after DOC-07 report details were fixed; verified all four18-pass logs and pip check. Review of199f1e1: supported full-SHA official Hassfest source path and active bilingual Discussions links accepted, no new findings. Reviewer also confirmed assumed_state is the accurate IoT class for this write-only lamp. Independent review of5bcbad7 also found no runtime/translation/metadata issues. Its sole formatting note (extra final document blank) is fixed in this evidence-only follow-up. All nine PR checks at5bcbad7 passed, including HACS, full official source Hassfest, central contracts, two lint jobs and four HA/library jobs.
 
 Physical lamp/ESPHome transfer, real HACS installation, firmware/service-change behavior and actual release upload are unverified. These are disclosed limitations, not automated CI success claims. There are no approved template/support-policy exceptions. No imagespec/payload or authentication/migration coverage is applicable because those features are absent.
 
-Central start status updated at d023678a3016ea441b0f556524882ba03ca81c6c; final status after merge remains pending. Initial remote HACS/lint/central checks passed; official published Hassfest rejected categories in run39914054037. The supported reviewed Core source path is documented in STANDARDS.md; actual remote build/result remains required.
+Central start status d023678a3016ea441b0f556524882ba03ca81c6c and verified-progress df4458459816caf5b0ee19d1a0af526aae4a0067 are recorded; the [central status](https://github.com/eigger/hass-repo-standards/blob/main/docs/adoption-status.md) records the eventual squash merge. The official published Hassfest image rejected categories in run39914054037. The supported reviewed Core source path then passed full remote builds/validation at199f1e1 and5bcbad7 without changing the integration manifest for validation.
+
+## Remote evidence for5bcbad7654b6b8017d05f2156d2cf2e9f245d892
+
+- [Tests: all four HA/library jobs and both lint jobs PASS](https://github.com/eigger/hass-melk-light/actions/runs/39914626173). Each environment ran18 tests, no skips.
+- [Validate: HACS, official source-built Hassfest and central template compliance PASS](https://github.com/eigger/hass-melk-light/actions/runs/39914626140).
+- [PR #5 final checks](https://github.com/eigger/hass-melk-light/pull/5/checks): the subsequent evidence-only commit reruns the same required checks before merge. Its integration/test/CI tree is unchanged from5bcbad7; earlier results are attributed only to their exact target commit.
+- Final local central checker, actionlint1.7.12, ruff0.17.1 and base-to-head git diff --check PASS after the document trailing blank fix.
 
 ## Historical scoped ZIP adoption (PR #4)
 
@@ -124,4 +131,3 @@ CI-01 .github/workflows/tests.yml: required common workflow missing
 
 - Existing CI workflows are preserved, except hass-kocom-smarthome where matching reviewed central references are synchronized. Existing support minimum and prior exceptions remain.
 - Independent review and remote CI: tracked in this branch's pull request; merge requires resolved actionable findings and successful applicable checks. No real release upload, device or new real HA runtime validation is claimed by these local packaging checks.
-
