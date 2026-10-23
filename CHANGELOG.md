@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.1 — 2026-10-23
 
 - Add diagnostic entities for live BLE connection, last command duration, retained last failure details and reload-scoped error count, backed by blesession reports and HA radio facts.
 - Update connection status on unexpected disconnects; clean up listeners on unload. Normal idle disconnect and cancellation do not count as errors.
