@@ -1,8 +1,12 @@
 # hass-melk-light
-[![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?logo=home-assistant)](https://hacs.xyz/)
-[![GitHub Release](https://img.shields.io/github/release/eigger/hass-melk-light.svg)](https://github.com/eigger/hass-melk-light/releases)
-[![License](https://img.shields.io/github/license/eigger/hass-melk-light)](https://github.com/eigger/hass-melk-light/blob/main/LICENSE)
-![integration usage](https://img.shields.io/badge/dynamic/json?color=41BDF5&logo=home-assistant&label=integration%20usage&suffix=%20installs&cacheSeconds=15600&url=https://analytics.home-assistant.io/custom_integrations.json&query=%24.melk_light.total)
+
+<!-- hass-standards:badges:start -->
+[![Release](https://img.shields.io/github/v/release/eigger/hass-melk-light?style=flat)](https://github.com/eigger/hass-melk-light/releases)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5?style=flat)](#installation)
+[![Home Assistant minimum](https://img.shields.io/badge/HA-%E2%89%A5%202025.11.0-41BDF5?style=flat)](hacs.json)
+[![License](https://img.shields.io/github/license/eigger/hass-melk-light?style=flat)](LICENSE)
+[![Downloads](https://img.shields.io/github/downloads/eigger/hass-melk-light/total?style=flat&color=41BDF5&label=Downloads)](https://github.com/eigger/hass-melk-light/releases)
+<!-- hass-standards:badges:end -->
 
 Home Assistant custom integration for **MELK Light Bar** (`melk_light`).
 
