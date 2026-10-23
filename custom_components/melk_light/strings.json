@@ -16,7 +16,8 @@
     },
     "abort": {
       "no_devices_found": "No MELK devices found.",
-      "not_supported": "Device not supported."
+      "not_supported": "Device not supported.",
+      "already_configured": "Device is already configured."
     }
   }
 }

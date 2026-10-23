@@ -3,4 +3,3 @@
 from .device import MelkLedDevice, MelkState
 
 __all__ = ["MelkLedDevice", "MelkState"]
-

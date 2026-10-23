@@ -1,13 +1,15 @@
-# Scoped standards adoption
+# Standards adoption
 
-- Reviewed standards SHA: `fd4162c0b93fbe8e109f99c787773ae09ba157e1`
-- Standard: https://github.com/eigger/hass-repo-standards/tree/fd4162c0b93fbe8e109f99c787773ae09ba157e1
-
-Only HACS ZIP release packaging and README badges are adopted in this change. Existing code, support minimum, dependencies, documentation body and CI are preserved. Full standards adoption and real HA verification remain outside this change.
-
-
-## 2026-10-23 ZIP release and Downloads update
-
-Base commit: `a7824588015ecbd86dc001bc63062b2f0bf4b874`. HACS remains Custom. `hacs.json` now selects `melk_light.zip`; publishing the next release builds and attaches that integration ZIP through the pinned central action. Analytics Usage is replaced by Downloads. The archive contains tracked integration files at its root. No existing release/tag/assets are modified.
-
-Implementation and review: root; generated release caller reuses the independently reviewed central ZIP contract. Support minimum, manifest, code, dependencies, README body and prior adoption exceptions are preserved. Verification evidence is recorded in ADOPTION_CHECKLIST.md; this scoped update does not establish full standards compliance.
+- Reviewed standards SHA: `26946e9075503633c16fb1b0f7380d0101ed7b45`
+- Standard: https://github.com/eigger/hass-repo-standards/tree/26946e9075503633c16fb1b0f7380d0101ed7b45
+- Profile: integration / ha; repository eigger/hass-melk-light; default branch master; domain melk_light.
+- Scope and implementation plan: [docs/adoption-plan.md](docs/adoption-plan.md).
+- Evidence and completion status: [ADOPTION_CHECKLIST.md](ADOPTION_CHECKLIST.md). No approved exceptions.
+- Minimum HA remains 2025.11.0. Current tests use HA 2026.10.2 independently of support policy.
+- blesession>=0.9.0 uses public session APIs and keeps the 30-second idle reuse policy. Both current and exact floor modes run in each HA environment. Minimum HA constrains pycares<5 because its aiodns 3.x requires result types removed in pycares 5; this does not raise support minimum.
+- Product category: lighting, based on the physical RGB MELK light bar and its lighting controls. Category evidence is in .hass-standards.json; no category is inferred merely from platform names.
+- Domain, config-entry data/schema, device identifiers and entity unique IDs remain unchanged. No data migration is needed. Failed writes now surface as service errors; successful writes still represent assumed state without hardware acknowledgement.
+- HACS remains Custom. PR #4 was reviewed and squash merged at 3dabcba755a5d3c41d29a8fb14d6f1b9603777e1. Downloads counts all release assets. ZIP deployment starts with the next separately requested release; no release/tag was created for this adoption.
+- Reviewed release standards SHA: `fd4162c0b93fbe8e109f99c787773ae09ba157e1`
+- Release action retains reviewed release standards SHA fd4162c0b93fbe8e109f99c787773ae09ba157e1 from PR #4; it is scoped independently of the full adoption SHA.
+- No imagespec, payload examples, polling coordinator, authentication, options flow or custom services exist; these conditional requirements are N/A.

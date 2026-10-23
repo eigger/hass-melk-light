@@ -31,3 +31,13 @@ CI-01 .github/workflows/tests.yml: required common workflow missing
 
 - Existing CI workflows are preserved, except hass-kocom-smarthome where matching reviewed central references are synchronized. Existing support minimum and prior exceptions remain.
 - Independent review and remote CI: tracked in this branch's pull request; merge requires resolved actionable findings and successful applicable checks. No real release upload, device or new real HA runtime validation is claimed by these local packaging checks.
+
+## 2026-10-23 Full adoption verification (in progress)
+
+Implementation plan: [docs/adoption-plan.md](docs/adoption-plan.md). Standards 26946e9075503633c16fb1b0f7380d0101ed7b45. Minimum HA remains 2025.11.0; no support-policy exceptions. Original protocol packets and stable identifiers are preserved. Full rule-by-rule completion evidence is being collected in this PR.
+
+Independent reviewer independent_review examined the working tree against base 3dabcba; no confirmed runtime blockers. DOC-07 report-information omission fixed in both languages. Final commit review and remote CI pending.
+
+Current/local library floor: 16 tests passed on HA 2026.10.2, Python 3.14.7, plugin0.13.373, blesession0.9.0, pip check PASS in separate environments. Minimum HA hardware setup boundary fixture fixed, 16 tests passed on HA2025.11.0/Python3.13.15/plugin0.13.294/blesession0.9.0; full four-environment final rerun pending.
+
+Physical device/ESPHome transfer, HACS installation and release upload remain unverified. No release/tag has been created. Original packaging evidence above is historical, not current runtime evidence.

@@ -2,28 +2,24 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 import dataclasses
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant.components import onboarding
 from homeassistant.components.bluetooth import (
     BluetoothServiceInfoBleak,
     async_discovered_service_info,
 )
 from homeassistant.config_entries import (
-    SOURCE_REAUTH,
-    ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
 )
 from homeassistant.const import CONF_ADDRESS
 from homeassistant.core import callback
 
-from .const import DOMAIN
 from .ble_discovery import MelkBluetoothDeviceData as DeviceData
+from .const import DOMAIN
 
 
 @dataclasses.dataclass
@@ -120,23 +116,10 @@ class MelkLightConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema({vol.Required(CONF_ADDRESS): vol.In(titles)}),
         )
 
-    async def async_step_reauth(
-        self, entry_data: Mapping[str, Any]
-    ) -> ConfigFlowResult:
-        """Handle a flow initialized by a reauth event."""
-        device: DeviceData = entry_data["device"]
-        self._discovered_device = device
-        self._discovery_info = device.last_service_info
-        return self.async_abort(reason="reauth_successful")
-
     @callback
     def _async_get_or_create_entry(self) -> ConfigFlowResult:
         """Create the config entry."""
-        if self.source == SOURCE_REAUTH:
-            return self.async_update_reload_and_abort(self._get_reauth_entry(), data={})
-
         return self.async_create_entry(
             title=self.context["title_placeholders"]["name"],
             data={},
         )
-

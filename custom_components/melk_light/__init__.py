@@ -22,7 +22,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     device = MelkLedDevice(address)
     hass.data[DOMAIN][entry.entry_id] = {"address": address, "device": device}
 
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    try:
+        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    except BaseException:
+        await device.close()
+        hass.data[DOMAIN].pop(entry.entry_id)
+        raise
 
     return True
 
@@ -30,10 +35,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     dev: MelkLedDevice = hass.data[DOMAIN][entry.entry_id]["device"]
-    await dev.disconnect()
-
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+        await dev.close()
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok
-

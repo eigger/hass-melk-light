@@ -1,0 +1,23 @@
+{
+  "title": "MELK Light Bar",
+  "config": {
+    "step": {
+      "user": {
+        "title": "MELK Light Bar",
+        "description": "추가할 MELK 조명을 선택하세요.",
+        "data": {
+          "address": "기기"
+        }
+      },
+      "bluetooth_confirm": {
+        "title": "MELK Light Bar",
+        "description": "{name} 기기를 추가할까요?"
+      }
+    },
+    "abort": {
+      "no_devices_found": "발견된 MELK 기기가 없습니다.",
+      "not_supported": "지원하지 않는 기기입니다.",
+      "already_configured": "이미 설정된 기기입니다."
+    }
+  }
+}

@@ -1,10 +1,6 @@
 """Constants for MELK Light Bar integration."""
 
-DOMAIN = "melk_light"
-MANUFACTURER = "EasyLink / ELK BLE"
-
-# Re-export BLE/protocol constants (kept in melk_ble)
-from .melk_ble.constants import (  # noqa: E402
+from .melk_ble.constants import (
     CHARACTERISTIC_UUID,
     DEVICE_NAME_PREFIX,
     FOOTER,
@@ -12,3 +8,15 @@ from .melk_ble.constants import (  # noqa: E402
     PAD,
     SERVICE_UUID,
 )
+
+__all__ = [
+    "CHARACTERISTIC_UUID",
+    "DEVICE_NAME_PREFIX",
+    "FOOTER",
+    "HEADER",
+    "PAD",
+    "SERVICE_UUID",
+]
+
+DOMAIN = "melk_light"
+MANUFACTURER = "EasyLink / ELK BLE"

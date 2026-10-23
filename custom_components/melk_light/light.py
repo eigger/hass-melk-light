@@ -13,10 +13,12 @@ from homeassistant.components.light import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
 from .const import DOMAIN
-from .entity import MelkBaseEntity
 from .effects import MELK_EFFECTS, effect_name_from_mode
+from .entity import MelkBaseEntity
 from .melk_ble.device import MelkLedDevice
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,12 +37,16 @@ async def async_setup_entry(
 
 class MelkLightEntity(MelkBaseEntity, LightEntity):
     _attr_name = "Light Bar"
+    _attr_should_poll = False
+    _attr_assumed_state = True
     _attr_supported_color_modes = {ColorMode.RGB}
     _attr_color_mode = ColorMode.RGB
     _attr_supported_features = LightEntityFeature.EFFECT
     _attr_effect_list = _MODE_EFFECTS
 
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, dev: MelkLedDevice) -> None:
+    def __init__(
+        self, hass: HomeAssistant, entry: ConfigEntry, dev: MelkLedDevice
+    ) -> None:
         super().__init__(hass, entry, dev)
         self._attr_unique_id = entry.unique_id
 
@@ -66,25 +72,8 @@ class MelkLightEntity(MelkBaseEntity, LightEntity):
         return attrs
 
     async def async_turn_on(self, **kwargs) -> None:
-        ble_device = self._get_ble_device()
-        if not ble_device:
-            _LOGGER.warning("BLE device not available for %s", self._entry.unique_id)
-            return
-
-        self._attr_is_on = True
-        if ATTR_BRIGHTNESS in kwargs:
-            self._attr_brightness = int(kwargs[ATTR_BRIGHTNESS])
-        if ATTR_RGB_COLOR in kwargs:
-            r, g, b = kwargs[ATTR_RGB_COLOR]
-            self._attr_rgb_color = (int(r), int(g), int(b))
-        if "effect" in kwargs and kwargs["effect"] is not None:
-            eff = str(kwargs["effect"])
-            if eff in MELK_EFFECTS:
-                self._attr_effect = eff
-        self.async_write_ha_state()
-
         try:
-            async with self._dev.connected(ble_device):
+            async with self._dev.connected(self._get_ble_device):
                 # Always send power(True) first so the device is guaranteed to
                 # be on before we apply color/brightness.  Cached state may be
                 # stale (e.g. device was physically switched off).
@@ -104,24 +93,24 @@ class MelkLightEntity(MelkBaseEntity, LightEntity):
                     if eff in MELK_EFFECTS:
                         await self._dev.set_mode(MELK_EFFECTS[eff])
                         self._attr_effect = eff
-        except Exception:
-            _LOGGER.exception("BLE command failed for %s", self._entry.unique_id)
+        except Exception as err:
+            raise HomeAssistantError("MELK Bluetooth command failed") from err
         finally:
+            self._attr_is_on = self._dev.state.is_on
+            self._attr_brightness = self._dev.state.brightness
+            self._attr_rgb_color = self._dev.state.rgb
+            self._attr_effect = effect_name_from_mode(self._dev.state.mode)
             self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs) -> None:  # noqa: ARG002
-        ble_device = self._get_ble_device()
-        if not ble_device:
-            _LOGGER.warning("BLE device not available for %s", self._entry.unique_id)
-            return
-
-        self._attr_is_on = False
-        self.async_write_ha_state()
-
         try:
-            async with self._dev.connected(ble_device):
+            async with self._dev.connected(self._get_ble_device):
                 await self._dev.power(False)
-        except Exception:
-            _LOGGER.exception("BLE command failed for %s", self._entry.unique_id)
+        except Exception as err:
+            raise HomeAssistantError("MELK Bluetooth command failed") from err
         finally:
+            self._attr_is_on = self._dev.state.is_on
+            self._attr_brightness = self._dev.state.brightness
+            self._attr_rgb_color = self._dev.state.rgb
+            self._attr_effect = effect_name_from_mode(self._dev.state.mode)
             self.async_write_ha_state()

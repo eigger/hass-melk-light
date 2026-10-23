@@ -2,20 +2,18 @@
 
 from __future__ import annotations
 
-from bluetooth_sensor_state_data import BluetoothData
 from home_assistant_bluetooth import BluetoothServiceInfoBleak
 
 from .melk_ble.constants import DEVICE_NAME_PREFIX, SERVICE_UUID
 
 
-class MelkBluetoothDeviceData(BluetoothData):
+class MelkBluetoothDeviceData:
     """Bluetooth device matcher for MELK LED bar (HA discovery)."""
 
     DEVICE_NAME_PREFIX = DEVICE_NAME_PREFIX
     SERVICE_UUID = SERVICE_UUID
 
     def __init__(self) -> None:
-        super().__init__()
         self.last_service_info: BluetoothServiceInfoBleak | None = None
 
     def supported(self, data: BluetoothServiceInfoBleak) -> bool:
@@ -27,4 +25,3 @@ class MelkBluetoothDeviceData(BluetoothData):
                 return False
         self.last_service_info = data
         return True
-
