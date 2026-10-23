@@ -1,10 +1,51 @@
 {
   "repository": "eigger/hass-melk-light",
   "default_branch": "master",
-  "domain": "melk_light",
+  "readmes": [
+    "README.md",
+    "README.ko.md"
+  ],
   "hacs": "custom",
   "release": true,
-  "readmes": [
-    "README.md"
-  ]
+  "installation_link": "#installation",
+  "hacs_default_evidence": "",
+  "tests_workflow": "tests.yml",
+  "validate_workflow": "validate.yml",
+  "installation_links": {
+    "README.md": "#installation",
+    "README.ko.md": "#설치"
+  },
+  "readme": {
+    "title": "hass-melk-light",
+    "descriptions": {
+      "en": "Home Assistant custom integration for **MELK Light Bar** (`melk_light`).",
+      "ko": "**MELK Light Bar** (`melk_light`)용 Home Assistant 커스텀 통합입니다."
+    },
+    "issues": true,
+    "discussions": true,
+    "license_name": "MIT License",
+    "license_notices": {
+      "en": [],
+      "ko": []
+    },
+    "related_projects": [
+      {
+        "name": "blesession",
+        "url": "https://github.com/eigger/blesession",
+        "description": {
+          "en": "Shared BLE sessions and Bluetooth proxy guidance used by this integration.",
+          "ko": "이 통합에서 사용하는 공용 BLE 세션과 Bluetooth 프록시 안내입니다."
+        }
+      }
+    ]
+  },
+  "exceptions": [],
+  "categories_review": {
+    "value": [
+      "lighting"
+    ],
+    "integration_type": null,
+    "source": "README Features and MELK LED Bar protocol: a physical RGB light bar for room lighting; lighting is the primary and only product category."
+  },
+  "domain": "melk_light"
 }

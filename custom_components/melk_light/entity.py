@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from homeassistant.components import bluetooth
+from blesession.hass import ble_device_or_raise
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -16,7 +16,9 @@ class MelkBaseEntity:
 
     _attr_has_entity_name = True
 
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, dev: MelkLedDevice) -> None:
+    def __init__(
+        self, hass: HomeAssistant, entry: ConfigEntry, dev: MelkLedDevice
+    ) -> None:
         self.hass = hass
         self._entry = entry
         self._dev = dev
@@ -30,5 +32,4 @@ class MelkBaseEntity:
         )
 
     def _get_ble_device(self):
-        return bluetooth.async_ble_device_from_address(self.hass, self._entry.unique_id)
-
+        return ble_device_or_raise(self.hass, self._entry.unique_id)

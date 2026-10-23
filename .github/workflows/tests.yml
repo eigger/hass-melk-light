@@ -1,0 +1,40 @@
+name: Tests
+'on':
+  push:
+    branches:
+    - master
+  pull_request: null
+  workflow_dispatch: null
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  current:
+    uses: eigger/hass-repo-standards/.github/workflows/python-tests.yml@26946e9075503633c16fb1b0f7380d0101ed7b45
+    with:
+      standards-ref: 26946e9075503633c16fb1b0f7380d0101ed7b45
+      domain: melk_light
+      python-versions: '["3.14"]'
+      requirements: requirements_test.txt
+      expected-ha-version: 2026.10.2
+      test-profile: ha
+      pytest-args: tests/components/melk_light/ -v
+      dependency-modes: '["current", "minimum"]'
+      minimum-packages: '["blesession"]'
+      ha-components: bluetooth bluetooth_adapters usb
+  minimum:
+    uses: eigger/hass-repo-standards/.github/workflows/python-tests.yml@26946e9075503633c16fb1b0f7380d0101ed7b45
+    with:
+      standards-ref: 26946e9075503633c16fb1b0f7380d0101ed7b45
+      domain: melk_light
+      python-versions: '["3.13"]'
+      requirements: requirements_test_min.txt
+      constraints: constraints/homeassistant-min.txt
+      expected-ha-version: 2025.11.0
+      test-profile: ha
+      pytest-args: tests/components/melk_light/ -v
+      dependency-modes: '["current", "minimum"]'
+      minimum-packages: '["blesession"]'
+      ha-components: bluetooth bluetooth_adapters usb

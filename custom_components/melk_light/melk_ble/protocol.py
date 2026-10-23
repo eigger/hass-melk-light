@@ -28,7 +28,9 @@ def packet_rgbw_status(flags: int, light_mode: int, value: int) -> bytes:
     Byte3: flags (bitfield), Byte4: light_mode, Byte5: value.
     Remaining bytes are padding.
     """
-    return _build_packet(0x04, 0x04, flags & 0xFF, light_mode & 0xFF, value & 0xFF, PAD, 0x00)
+    return _build_packet(
+        0x04, 0x04, flags & 0xFF, light_mode & 0xFF, value & 0xFF, PAD, 0x00
+    )
 
 
 def packet_brightness(brightness: int, light_mode: int = 0xFF) -> bytes:
@@ -79,4 +81,3 @@ def packet_mic_sensitivity(sensitivity: int) -> bytes:
 def packet_mic_eq_mode(eq_mode: int) -> bytes:
     # 0..7 -> 0x80..0x87
     return _build_packet(0x07, 0x03, (int(eq_mode) + 0x80) & 0xFF, 0x04, PAD, PAD, 0x00)
-

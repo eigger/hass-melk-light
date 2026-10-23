@@ -256,4 +256,3 @@ def effect_name_from_mode(mode: int | None) -> str | None:
     if not names:
         return None
     return sorted(names, key=lambda s: (len(s), s.lower()))[0]
-

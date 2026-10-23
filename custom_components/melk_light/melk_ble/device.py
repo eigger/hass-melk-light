@@ -1,42 +1,39 @@
-"""BLE connection + device state for MELK LED bar."""
+"""MELK protocol state and serialized, reusable BLE sessions."""
 
 from __future__ import annotations
 
 import asyncio
 import logging
 import time
+from collections.abc import Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 
 from bleak import BleakClient
 from bleak.backends.device import BLEDevice
-from bleak_retry_connector import establish_connection
+from blesession import ble_session, still_up
 
 from .constants import CHARACTERISTIC_UUID, DEVICE_NAME_PREFIX
 from .protocol import (
     packet_brightness,
     packet_color,
     packet_color_temperature,
-    packet_rgbw_status,
-    packet_single_color,
     packet_mic_eq_mode,
     packet_mic_onoff,
     packet_mic_sensitivity,
     packet_mode,
     packet_mode_speed,
     packet_power,
+    packet_rgbw_status,
     packet_scene,
+    packet_single_color,
 )
 
 _LOGGER = logging.getLogger(__name__)
-
-# The FFF3 characteristic is Write-Without-Response only (no ACK).
-# We improve reliability by sending each packet _WRITE_REPEAT_COUNT times,
-# matching the reference app's 100 ms periodic-timer approach.
-_WRITE_REPEAT_COUNT = 2    # how many times to send each packet (app: 1x, +1 for ESPHome proxy)
-_WRITE_REPEAT_DELAY = 0.1  # seconds between repeats (≈ app's 100 ms interval)
-_POST_CONNECT_DELAY = 0.3  # settle time after a fresh BLE connection
-_DISCONNECT_TIMEOUT = 30.0 # seconds of inactivity before dropping the connection
+_WRITE_REPEAT_COUNT = 2
+_WRITE_REPEAT_DELAY = 0.1
+_POST_CONNECT_DELAY = 0.3
+_DISCONNECT_TIMEOUT = 30.0
 
 
 @dataclass
@@ -56,149 +53,108 @@ class MelkState:
 
 
 class MelkLedDevice:
-    """Connection + write throttling for MELK LED bar.
-
-    Each public method sends exactly one packet, matching the reference app
-    (melk_led_controller.py / BluetoothLEService.java).
-    """
+    """Own MELK commands; blesession owns opening and reusing each link."""
 
     def __init__(self, address: str) -> None:
         self.address = address
         self.client: BleakClient | None = None
         self.name: str | None = None
-        self._ble_device: BLEDevice | None = None  # stored for reconnect
-        self._lock = asyncio.Lock()
-        self._last_tx = 0.0
         self.state = MelkState()
+        self._lock = asyncio.Lock()
+        self._resolve_device: Callable[[], BLEDevice] | None = None
+        self._last_tx = 0.0
+        self._idle_deadline = 0.0
         self._disconnect_timer: asyncio.TimerHandle | None = None
+        self._closed = False
 
-    def _on_disconnect(self, client: BleakClient) -> None:  # noqa: ARG002
-        _LOGGER.debug("Disconnected from MELK device %s", self.address)
-        self.client = None
-        if self._disconnect_timer:
+    def _cancel_timer(self) -> None:
+        if self._disconnect_timer is not None:
             self._disconnect_timer.cancel()
             self._disconnect_timer = None
 
     def _reset_disconnect_timer(self) -> None:
-        if self._disconnect_timer:
-            self._disconnect_timer.cancel()
-            
-        loop = asyncio.get_running_loop()
-        self._disconnect_timer = loop.call_later(
-            _DISCONNECT_TIMEOUT,
-            lambda: asyncio.create_task(self._auto_disconnect())
+        self._cancel_timer()
+        self._idle_deadline = time.monotonic() + _DISCONNECT_TIMEOUT
+        self._disconnect_timer = asyncio.get_running_loop().call_later(
+            _DISCONNECT_TIMEOUT, lambda: asyncio.create_task(self._auto_disconnect())
         )
 
     async def _auto_disconnect(self) -> None:
-        _LOGGER.debug("No commands sent for %s seconds, automatically disconnecting %s", _DISCONNECT_TIMEOUT, self.address)
-        await self.disconnect()
+        async with self._lock:
+            # A command may have refreshed the deadline while this task waited.
+            if time.monotonic() >= self._idle_deadline:
+                await self._disconnect_locked()
 
     def is_connected(self) -> bool:
-        return bool(self.client and self.client.is_connected)
+        return still_up(self.client)
 
-    async def connect(self, ble_device: BLEDevice) -> bool:
-        self._ble_device = ble_device  # always refresh so reconnect is possible
-        if self.is_connected():
-            return True
-        try:
-            _LOGGER.debug("Connecting to MELK device %s", self.address)
-            self.client = await establish_connection(
-                BleakClient,
-                ble_device,
-                ble_device.address,
-                disconnected_callback=self._on_disconnect,
-            )
-            if not self.client.is_connected:
-                return False
-            if not self.name:
-                self.name = ble_device.name or DEVICE_NAME_PREFIX.rstrip("-")
-            _LOGGER.debug("Connected to MELK device %s", self.address)
-            return True
-        except Exception as err:
-            _LOGGER.warning("Failed to connect to %s: %s", ble_device.address, err)
-            self.client = None
-            return False
+    async def _ensure_client(self) -> BleakClient:
+        assert self._resolve_device is not None
+        ble_device = self._resolve_device()
+        async with ble_session(
+            ble_device, client=self.client, keep=True, settle_s=_POST_CONNECT_DELAY
+        ) as client:
+            self.client = client
+            self.name = ble_device.name or DEVICE_NAME_PREFIX.rstrip("-")
+            return client
+
+    async def _disconnect_locked(self) -> None:
+        self._cancel_timer()
+        client, self.client = self.client, None
+        if client is not None and client.is_connected:
+            try:
+                # keep=True hands ownership of idle cleanup to this device.
+                async with asyncio.timeout(10):
+                    await client.disconnect()
+            except Exception as err:
+                _LOGGER.debug("MELK disconnect failed: %s", err)
 
     async def disconnect(self) -> None:
-        if self._disconnect_timer:
-            self._disconnect_timer.cancel()
-            self._disconnect_timer = None
+        """Disconnect after any active command block finishes."""
+        async with self._lock:
+            await self._disconnect_locked()
 
-        if not self.client:
-            return
-        try:
-            if self.client.is_connected:
-                _LOGGER.debug("Disconnecting from MELK device %s...", self.address)
-                await self.client.disconnect()
-        except Exception as err:
-            _LOGGER.debug("Disconnect error: %s", err)
-        finally:
-            self.client = None
+    async def close(self) -> None:
+        """Stop accepting commands and release resources on unload."""
+        self._closed = True
+        await self.disconnect()
 
     async def _write(self, data: bytes) -> None:
-        """Write Without Response, sent _WRITE_REPEAT_COUNT times for reliability.
+        """Repeat write-without-response packets with the device's 100 ms gap.
 
-        The FFF3 characteristic only supports Write Without Response
-        (GATT error 3 / ATT_ERR_WRITE_NOT_PERMITTED with response=True).
-        There is no ACK, so we compensate by sending each packet multiple
-        times with a ~100 ms gap — matching the reference app's timer approach.
-        On connection loss the client is reconnected before the next send.
+        The connected context holds the lock for the whole command sequence.
+        Resolve the current HA route again if a link drops between repeats.
         """
-        async with self._lock:
-            now = time.monotonic()
-            gap = now - self._last_tx
-            if gap < _WRITE_REPEAT_DELAY:
-                await asyncio.sleep(_WRITE_REPEAT_DELAY - gap)
-
-            for n in range(1, _WRITE_REPEAT_COUNT + 1):
-                # Reconnect if the connection was lost between sends.
-                if not self.client or not self.client.is_connected:
-                    if self._ble_device is None:
-                        raise RuntimeError("No BLE device available for reconnect")
-                    _LOGGER.debug(
-                        "Reconnecting before send %d/%d …", n, _WRITE_REPEAT_COUNT
-                    )
-                    if not await self.connect(self._ble_device):
-                        raise RuntimeError(
-                            f"Reconnect failed before send {n}/{_WRITE_REPEAT_COUNT}"
-                        )
-                    await asyncio.sleep(_POST_CONNECT_DELAY)
-
-                self._last_tx = time.monotonic()
-                _LOGGER.debug("TX [%d/%d] %s", n, _WRITE_REPEAT_COUNT, data.hex())
-                await self.client.write_gatt_char(
-                    CHARACTERISTIC_UUID, data, response=False
-                )
-
-                if n < _WRITE_REPEAT_COUNT:
-                    await asyncio.sleep(_WRITE_REPEAT_DELAY)
-
-    async def ensure_connected(self, ble_device: BLEDevice) -> None:
-        was_connected = self.is_connected()
-        if not await self.connect(ble_device):
-            raise RuntimeError(f"Unable to connect to {ble_device.address}")
-        if not was_connected:
-            await asyncio.sleep(_POST_CONNECT_DELAY)
+        gap = time.monotonic() - self._last_tx
+        if gap < _WRITE_REPEAT_DELAY:
+            await asyncio.sleep(_WRITE_REPEAT_DELAY - gap)
+        for n in range(_WRITE_REPEAT_COUNT):
+            client = await self._ensure_client()
+            self._last_tx = time.monotonic()
+            await client.write_gatt_char(CHARACTERISTIC_UUID, data, response=False)
+            if n + 1 < _WRITE_REPEAT_COUNT:
+                await asyncio.sleep(_WRITE_REPEAT_DELAY)
 
     @asynccontextmanager
-    async def connected(self, ble_device: BLEDevice):
-        """Ensure the device is connected for a command block.
-
-        The connection is kept alive after the block exits so that subsequent
-        commands can reuse it without paying the reconnect cost each time.
-        It will automatically disconnect after 30 seconds of inactivity.
-        Call disconnect() explicitly (e.g. on integration unload) when the
-        connection is no longer needed.
-        """
-        if self._disconnect_timer:
-            self._disconnect_timer.cancel()
-            self._disconnect_timer = None
-
-        await self.ensure_connected(ble_device)
-        try:
-            yield
-        finally:
-            self._reset_disconnect_timer()
+    async def connected(self, resolve_device: Callable[[], BLEDevice]):
+        """Serialize a complete command and resolve its route under the lock."""
+        async with self._lock:
+            if self._closed:
+                raise RuntimeError("MELK device is unloaded")
+            self._cancel_timer()
+            self._resolve_device = resolve_device
+            try:
+                await self._ensure_client()
+                yield
+            except BaseException:
+                await self._disconnect_locked()
+                raise
+            finally:
+                self._resolve_device = None
+                if self._closed or self.client is None:
+                    await self._disconnect_locked()
+                else:
+                    self._reset_disconnect_timer()
 
     # ── Commands (each sends exactly one packet) ──────────────
 
