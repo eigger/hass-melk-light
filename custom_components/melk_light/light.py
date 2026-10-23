@@ -73,7 +73,7 @@ class MelkLightEntity(MelkBaseEntity, LightEntity):
 
     async def async_turn_on(self, **kwargs) -> None:
         try:
-            async with self._dev.connected(self._get_ble_device):
+            async with self._dev.connected(self._get_ble_device, operation="turn_on"):
                 # Always send power(True) first so the device is guaranteed to
                 # be on before we apply color/brightness.  Cached state may be
                 # stale (e.g. device was physically switched off).
@@ -106,7 +106,7 @@ class MelkLightEntity(MelkBaseEntity, LightEntity):
 
     async def async_turn_off(self, **kwargs) -> None:  # noqa: ARG002
         try:
-            async with self._dev.connected(self._get_ble_device):
+            async with self._dev.connected(self._get_ble_device, operation="turn_off"):
                 await self._dev.power(False)
         except Exception as err:
             raise HomeAssistantError(

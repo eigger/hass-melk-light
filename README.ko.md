@@ -35,6 +35,7 @@
 
 - Home Assistant Bluetooth를 통한 BLE 검색
 - 조명 제어: 켜기/끄기, 밝기, RGB, 효과(모드)
+- 진단 엔티티: Bluetooth 연결, 명령 소요 시간, 마지막 실패와 오류 횟수
 
 ## 설치
 

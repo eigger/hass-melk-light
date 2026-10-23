@@ -24,5 +24,23 @@
     "command_failed": {
       "message": "MELK Bluetooth command failed. Check device power and the Bluetooth connection path, then try again."
     }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connection": {
+        "name": "Bluetooth connection"
+      }
+    },
+    "sensor": {
+      "duration": {
+        "name": "Command duration"
+      },
+      "last_failure": {
+        "name": "Last failure"
+      },
+      "error_count": {
+        "name": "Error count"
+      }
+    }
   }
 }

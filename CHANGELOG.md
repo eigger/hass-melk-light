@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Add diagnostic entities for live BLE connection, last command duration, retained last failure details and reload-scoped error count, backed by blesession reports and HA radio facts.
+- Update connection status on unexpected disconnects; clean up listeners on unload. Normal idle disconnect and cancellation do not count as errors.
+
 ## 0.2.0 — 2026-10-23
 
 - Adopt shared HA standards, bilingual documentation/translations, real HA tests and common CI without raising the HA 2025.11.0 minimum.

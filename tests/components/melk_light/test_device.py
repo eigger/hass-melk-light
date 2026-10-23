@@ -49,7 +49,7 @@ async def test_drop_between_repeats_refreshes_route(mock_client):
         async with dev.connected(resolve):
             await dev.power(True)
         assert connect.await_count == 2
-        assert resolve.call_count == 3
+        assert resolve.call_count == 2
         assert fresh.write_gatt_char.await_args.args[1] == packet_power(True)
     await dev.close()
 
@@ -104,6 +104,8 @@ async def test_cancel_releases_connection_and_lock(mock_client):
     assert not dev._lock.locked()
     assert dev.client is None
     mock_client.disconnect.assert_awaited_once()
+    assert dev.reports.failures == 0
+    assert dev.reports.last is None
     await dev.close()
     with pytest.raises(RuntimeError, match="unloaded"):
         async with dev.connected(route):
@@ -159,6 +161,39 @@ async def test_cancel_during_settle_closes_unhanded_client(mock_client):
     assert dev.client is None
     assert dev._disconnect_timer is None
     assert not dev._lock.locked()
+
+
+async def test_idle_disconnect_error_is_reported(mock_client):
+    dev = MelkLedDevice(route().address)
+    async with dev.connected(route):
+        await dev.power(True)
+    mock_client.disconnect.side_effect = TimeoutError("proxy unavailable")
+    await dev.disconnect()
+    assert dev.reports.failures == 1
+    assert dev.reports.last_failure["operation"] == "disconnect"
+    assert dev.reports.last_failure["failed_stage"] == "disconnect"
+    await dev.close()
+
+
+async def test_report_radio_facts_and_reuse(mock_client):
+    dev = MelkLedDevice(route().address)
+    dev.report_facts = lambda trace: {
+        "via": "test proxy",
+        "via_type": "proxy",
+        "rssi": -67,
+        "paths": 1,
+        "via_unconfirmed": True,
+    }
+    for _ in range(2):
+        async with dev.connected(route):
+            await dev.power(True)
+    report = dev.reports.last
+    assert report["via"] == "test proxy"
+    assert report["rssi"] == -67
+    assert report["via_unconfirmed"] is True
+    assert report["reused"] is True
+    assert "connect_s" not in report
+    await dev.close()
 
 
 async def test_disconnect_timeout_is_bounded(mock_client):
