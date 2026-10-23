@@ -19,5 +19,10 @@
       "not_supported": "Device not supported.",
       "already_configured": "Device is already configured."
     }
+  },
+  "exceptions": {
+    "command_failed": {
+      "message": "MELK Bluetooth command failed. Check device power and the Bluetooth connection path, then try again."
+    }
   }
 }

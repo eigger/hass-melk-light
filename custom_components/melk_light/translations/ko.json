@@ -19,5 +19,10 @@
       "not_supported": "지원하지 않는 기기입니다.",
       "already_configured": "이미 설정된 기기입니다."
     }
+  },
+  "exceptions": {
+    "command_failed": {
+      "message": "MELK Bluetooth 명령이 실패했습니다. 기기 전원과 Bluetooth 연결 경로를 확인한 뒤 다시 시도하세요."
+    }
   }
 }

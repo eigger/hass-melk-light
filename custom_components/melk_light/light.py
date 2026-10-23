@@ -94,7 +94,9 @@ class MelkLightEntity(MelkBaseEntity, LightEntity):
                         await self._dev.set_mode(MELK_EFFECTS[eff])
                         self._attr_effect = eff
         except Exception as err:
-            raise HomeAssistantError("MELK Bluetooth command failed") from err
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="command_failed"
+            ) from err
         finally:
             self._attr_is_on = self._dev.state.is_on
             self._attr_brightness = self._dev.state.brightness
@@ -107,7 +109,9 @@ class MelkLightEntity(MelkBaseEntity, LightEntity):
             async with self._dev.connected(self._get_ble_device):
                 await self._dev.power(False)
         except Exception as err:
-            raise HomeAssistantError("MELK Bluetooth command failed") from err
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="command_failed"
+            ) from err
         finally:
             self._attr_is_on = self._dev.state.is_on
             self._attr_brightness = self._dev.state.brightness
