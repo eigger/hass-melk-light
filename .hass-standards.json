@@ -1,0 +1,10 @@
+{
+  "repository": "eigger/hass-melk-light",
+  "default_branch": "master",
+  "domain": "melk_light",
+  "hacs": "custom",
+  "release": true,
+  "readmes": [
+    "README.md"
+  ]
+}
