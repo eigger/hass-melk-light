@@ -24,5 +24,23 @@
     "command_failed": {
       "message": "MELK Bluetooth 명령이 실패했습니다. 기기 전원과 Bluetooth 연결 경로를 확인한 뒤 다시 시도하세요."
     }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connection": {
+        "name": "Bluetooth 연결"
+      }
+    },
+    "sensor": {
+      "duration": {
+        "name": "명령 소요 시간"
+      },
+      "last_failure": {
+        "name": "마지막 실패"
+      },
+      "error_count": {
+        "name": "오류 횟수"
+      }
+    }
   }
 }

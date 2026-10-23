@@ -1,5 +1,17 @@
 # Standards adoption checklist
 
+## 2026-10-23 Connection/error diagnostics follow-up (in progress)
+
+User requested blesession connection/error diagnostic entities after release0.2.0. Base11d581f3bd8a8a86c547bec9c5af386565685b63; reviewed standards SHA stays26946e9075503633c16fb1b0f7380d0101ed7b45. Earlier18-test adoption results below are historical and do not validate this new change.
+
+- HA-05/07/08/09/10/11, TEST-01/06/07/09: add one diagnostic connectivity binary sensor plus command duration, last failure timestamp/report and reload-scoped error count sensors. Existing light/device IDs unchanged; new stable suffix IDs share its device. Push listeners use HA APIs and are removed on unload; no polling, new scans or extra connections.
+- Public blesession SessionTrace/SessionReports/build_report plus injected HA radio_facts; no new dependency or support-minimum change. Error count retains failures across successes; cancellation/normal idle/unload are excluded, idle disconnect errors included. Actual radio facts and via_unconfirmed are preserved; exceptions redact the configured device address. Public sharing still requires removing device/proxy names and other identifying data as documented.
+- DOC-01/02/07: EN/KO README feature addition and troubleshooting sensor meaning/lifetime/route uncertainty updated; names translated in strings/en/ko. No diagnostic file download is claimed.
+- New actual HA test_sensor/test_binary_sensor cover initial state, report values, timestamp retention, count/recovery, unreachable errors, unexpected drop callback before is_connected catches up, same-device registry metadata, listener unload and reload reset. test_device adds reuse/radio facts/disconnect-error report and cancellation non-recording assertions. Existing transport/lifecycle tests retained.
+- Four distinct existing WSL environments each26 passed plus pip check: current and exact-floor with Python3.14.7/HA2026.10.2/plugin0.13.373/bleak3.0.2/connector4.7.1; minimum current and exact-floor with Python3.13.15/HA2025.11.0/plugin0.13.294/bleak1.0.1/connector4.4.3. All actually install blesession0.9.0 (current resolver and exact floor coincide). No skip/xfail/deselect. Logs `/home/eigger/.cache/melk-adoption-20261023/diagnostics-{current,current-floor,minimum,minimum-current}.log`. Commands: each environment's `python -m pytest tests/components/melk_light/ -q --timeout 30`, `python -m pip check`, and installed-version print. Sensor/binary_sensor component manifests contain no extra Python requirements or mandatory dependencies; existing HA component install contract remains sufficient.
+- GOV-05 independent_review inspected runtime/new platforms and independently ran current26PASS/2.84s, minimum26PASS/0.68s. No confirmed runtime defects; old no-sensor documentation was flagged and is now replaced bilingually. Final commit review and remote CI pending.
+- Central start updated at7ca368648cbd419fb942766eb609758c87379f20. Final PR/merge/status evidence pending. Physical lamp/proxy transfer is not verified; no new release/tag is created in this follow-up.
+
 ## Current adoption — 2026-10-23
 
 - Repository: eigger/hass-melk-light, master, domain melk_light, profile integration/ha.

@@ -17,3 +17,7 @@
 ## Hassfest schema compatibility
 
 The published official Hassfest image (digest sha256:2dce3c5423a600e7965e5a3d5a95e0707e8452fb001ab2b5d0602099bbecba92) rejected the official categories key in PR #5 run 39914054037. The central supported hassfest-core-ref input now selects reviewed Core ec18d8b25d1ee39aa8b85a72a170e42bee33228c, whose manifest validator supports custom categories. Shared CI builds and runs that commit's unmodified official Dockerfile/entrypoint and full validator against the original caller checkout. No manifest key or validation is removed. This selects a validator, not the HA runtime or support minimum. Remove the override only after the official published image passes the same manifest. Initial source review confirms categories support and the official build path; remote build/result is tracked in the checklist.
+
+## Connection and failure diagnostics follow-up
+
+User follow-up after0.2.0 requests connection/error diagnostics. Add binary_sensor and sensor platforms under the existing device/identifiers. Use public blesession SessionTrace, SessionReports and build_report; HA-layer radio_facts injection keeps the protocol package HA-independent. Connection callbacks never initiate I/O; report/connection listeners are removed on unload. Keep minimum HA2025.11.0 and blesession>=0.9.0. Counts reset on entry reload and cancellation/normal idle/unload are not counted as failed commands. This is a separate functional change; prior adoption PASS results do not validate it. New evidence is in the checklist's follow-up section.

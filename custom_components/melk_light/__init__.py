@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from blesession.hass import radio_facts
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
@@ -9,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from .const import DOMAIN
 from .melk_ble.device import MelkLedDevice
 
-PLATFORMS: list[Platform] = [Platform.LIGHT]
+PLATFORMS: list[Platform] = [Platform.LIGHT, Platform.BINARY_SENSOR, Platform.SENSOR]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -20,6 +21,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     assert address is not None
 
     device = MelkLedDevice(address)
+    device.report_facts = lambda trace: radio_facts(hass, address, trace.link)
     hass.data[DOMAIN][entry.entry_id] = {"address": address, "device": device}
 
     try:

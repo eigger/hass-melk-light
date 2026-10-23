@@ -11,7 +11,14 @@ from dataclasses import dataclass
 
 from bleak import BleakClient
 from bleak.backends.device import BLEDevice
-from blesession import ble_session, still_up
+from blesession import (
+    SessionReports,
+    SessionTrace,
+    ble_session,
+    build_report,
+    stages,
+    still_up,
+)
 
 from .constants import CHARACTERISTIC_UUID, DEVICE_NAME_PREFIX
 from .protocol import (
@@ -66,6 +73,53 @@ class MelkLedDevice:
         self._idle_deadline = 0.0
         self._disconnect_timer: asyncio.TimerHandle | None = None
         self._closed = False
+        self.reports = SessionReports()
+        self.report_facts: Callable[[SessionTrace], dict] | None = None
+        self._trace: SessionTrace | None = None
+        self._connection_listeners: list[Callable[[], None]] = []
+
+    def add_connection_listener(
+        self, listener: Callable[[], None]
+    ) -> Callable[[], None]:
+        """Observe live link changes without polling or initiating connections."""
+        self._connection_listeners.append(listener)
+
+        def remove() -> None:
+            if listener in self._connection_listeners:
+                self._connection_listeners.remove(listener)
+
+        return remove
+
+    def _notify_connection(self) -> None:
+        for listener in tuple(self._connection_listeners):
+            try:
+                listener()
+            except Exception:
+                _LOGGER.exception("MELK connection listener failed")
+
+    def _on_disconnect(self, client: BleakClient) -> None:
+        # blesession sets its drop event before calling this, even where a
+        # backend's is_connected property has not caught up. Ignore old links.
+        if client is self.client:
+            self._notify_connection()
+
+    def _record_report(
+        self, operation: str, trace: SessionTrace, error: BaseException | None
+    ) -> None:
+        facts = {}
+        if self.report_facts is not None:
+            try:
+                facts = self.report_facts(trace)
+            except Exception:
+                _LOGGER.debug("MELK radio facts unavailable", exc_info=True)
+        report = build_report(
+            operation=operation, trace=trace, exc=error, facts=facts, noun="light"
+        )
+        # A backend may include a device address in its exception text.
+        for key, value in report.items():
+            if isinstance(value, str):
+                report[key] = value.replace(self.address, "[redacted]")
+        self.reports.record(report)
 
     def _cancel_timer(self) -> None:
         if self._disconnect_timer is not None:
@@ -90,24 +144,45 @@ class MelkLedDevice:
 
     async def _ensure_client(self) -> BleakClient:
         assert self._resolve_device is not None
-        ble_device = self._resolve_device()
+        was_connected = self.is_connected()
+        if self._trace is not None:
+            with self._trace.timed("lookup"):
+                ble_device = self._resolve_device()
+        else:
+            ble_device = self._resolve_device()
         async with ble_session(
-            ble_device, client=self.client, keep=True, settle_s=_POST_CONNECT_DELAY
+            ble_device,
+            client=self.client,
+            keep=True,
+            settle_s=_POST_CONNECT_DELAY,
+            trace=self._trace,
+            disconnected_callback=self._on_disconnect,
         ) as client:
             self.client = client
             self.name = ble_device.name or DEVICE_NAME_PREFIX.rstrip("-")
+            if not was_connected:
+                self._notify_connection()
             return client
 
     async def _disconnect_locked(self) -> None:
         self._cancel_timer()
         client, self.client = self.client, None
+        if client is not None:
+            self._notify_connection()
         if client is not None and client.is_connected:
+            trace = self._trace or SessionTrace()
             try:
                 # keep=True hands ownership of idle cleanup to this device.
-                async with asyncio.timeout(10):
-                    await client.disconnect()
+                with trace.timed(stages.DISCONNECT):
+                    async with asyncio.timeout(10):
+                        await client.disconnect()
             except Exception as err:
                 _LOGGER.debug("MELK disconnect failed: %s", err)
+                if self._trace is None and not self._closed:
+                    trace.record("duration", trace.timings.get("disconnect", 0.0))
+                    self._record_report("disconnect", trace, err)
+                else:
+                    trace.note(disconnect_error=type(err).__name__)
 
     async def disconnect(self) -> None:
         """Disconnect after any active command block finishes."""
@@ -129,24 +204,33 @@ class MelkLedDevice:
         if gap < _WRITE_REPEAT_DELAY:
             await asyncio.sleep(_WRITE_REPEAT_DELAY - gap)
         for n in range(_WRITE_REPEAT_COUNT):
-            client = await self._ensure_client()
+            client = self.client if self.is_connected() else await self._ensure_client()
+            assert client is not None
             self._last_tx = time.monotonic()
-            await client.write_gatt_char(CHARACTERISTIC_UUID, data, response=False)
+            assert self._trace is not None
+            with self._trace.timed(stages.TRANSFER):
+                await client.write_gatt_char(CHARACTERISTIC_UUID, data, response=False)
             if n + 1 < _WRITE_REPEAT_COUNT:
                 await asyncio.sleep(_WRITE_REPEAT_DELAY)
 
     @asynccontextmanager
-    async def connected(self, resolve_device: Callable[[], BLEDevice]):
+    async def connected(
+        self, resolve_device: Callable[[], BLEDevice], *, operation: str = "command"
+    ):
         """Serialize a complete command and resolve its route under the lock."""
         async with self._lock:
             if self._closed:
                 raise RuntimeError("MELK device is unloaded")
             self._cancel_timer()
             self._resolve_device = resolve_device
+            trace = self._trace = SessionTrace(stage_map={"lookup": stages.UNREACHABLE})
+            started = time.monotonic()
+            error: BaseException | None = None
             try:
                 await self._ensure_client()
                 yield
-            except BaseException:
+            except BaseException as err:
+                error = err
                 await self._disconnect_locked()
                 raise
             finally:
@@ -155,6 +239,11 @@ class MelkLedDevice:
                     await self._disconnect_locked()
                 else:
                     self._reset_disconnect_timer()
+                self._trace = None
+                trace.record("duration", time.monotonic() - started)
+                # Cancellation is not a completed command or a counted failure.
+                if error is None or isinstance(error, Exception):
+                    self._record_report(operation, trace, error)
 
     # ── Commands (each sends exactly one packet) ──────────────
 

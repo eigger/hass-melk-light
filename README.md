@@ -35,6 +35,7 @@ Home Assistant custom integration for **MELK Light Bar** (`melk_light`).
 
 - BLE discovery via Home Assistant Bluetooth
 - Light control: on/off, brightness, RGB, effect(mode)
+- Diagnostic entities: Bluetooth connection, command duration, last failure and error count
 
 ## Installation
 

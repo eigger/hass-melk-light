@@ -21,7 +21,16 @@ MELK 조명의 전원을 켜고 연결 가능한 Bluetooth 어댑터 또는 활�
 
 ## 진단 및 로그
 
-진단 센서·세션 보고 엔티티·진단 다운로드 기능은 없습니다. HA에 표시되는 명령 오류의 예외 상세와 로그를 확인하세요. configuration.yaml의 `logger.logs` 아래 `custom_components.melk_light`와 `blesession`을 일시적으로 `debug`로 지정하고 재시작해 재현한 뒤, 항목을 제거하고 재시작해 해제하세요. 공유 전 Bluetooth 주소·기기 이름·프록시 식별자 등 개인정보를 지우세요. 광고 수신만으로 실제 연결 경로가 동작한다고 판단할 수 없습니다.
+기기 페이지의 진단 엔티티를 확인하세요.
+
+- **Bluetooth 연결**: 실제 BLE 링크 상태입니다. 30초 유휴 해제 후 꺼지는 것은 정상이며, 조명 전원이 꺼졌다는 뜻이 아닙니다. 광고 수신 여부와도 다릅니다.
+- **명령 소요 시간**: 마지막 완료 명령의 초 단위 시간과 blesession 보고 속성입니다. 명령 성공·실패 시 갱신되며, 유휴 연결 해제 자체가 실패하면 `operation: disconnect`로 갱신됩니다.
+- **마지막 실패**: 실패 시각과 해당 보고를 유지합니다. 이후 명령이 성공해도 지우지 않습니다. 아직 실패가 없으면 알 수 없음으로 표시합니다.
+- **오류 횟수**: 통합 로드 이후 실패한 명령과 유휴 해제 실패의 횟수입니다. 재로드·재시작 시 0으로 초기화되며 장기 누적 통계가 아닙니다. 정상 유휴 해제, 명령 취소, 언로드는 집계하지 않습니다. 예기치 않은 링크 끊김은 연결 상태에 반영되며, 그로 인해 명령이 실패한 경우 오류로 집계합니다.
+
+보고에는 실제 수집된 경우 `error`, `failed_stage`, `failed_detail`, `likely_cause`, `likely_cause_key`, `connect_s`, `transfer_s`, `duration_s`, `via`, `via_type`, `rssi`, `paths`가 표시됩니다. `via_unconfirmed: true`이면 `via`는 광고를 수신한 경로에 기반한 추정이므로 실제 연결 경로로 확정할 수 없습니다. 수신 경로가 다르면 `advertised_via`로 구분됩니다. 실패 단계는 `unreachable`(조회), `connect`(연결), `transfer`(쓰기), `disconnect`(해제)를 확인하세요. 상태 다운로드 기능은 없으며, 엔티티 속성과 HA 명령 오류·로그를 이용합니다.
+
+ configuration.yaml의 `logger.logs` 아래 `custom_components.melk_light`와 `blesession`을 일시적으로 `debug`로 지정하고 재시작해 재현한 뒤, 항목을 제거하고 재시작해 해제하세요. 공유 전 Bluetooth 주소·기기 이름·프록시 식별자 등 개인정보를 지우세요. 광고 수신만으로 실제 연결 경로가 동작한다고 판단할 수 없습니다.
 
 ## 문제가 계속되는 경우
 
