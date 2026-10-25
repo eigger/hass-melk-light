@@ -12,9 +12,9 @@ concurrency:
   cancel-in-progress: true
 jobs:
   current:
-    uses: eigger/hass-repo-standards/.github/workflows/python-tests.yml@26946e9075503633c16fb1b0f7380d0101ed7b45
+    uses: eigger/hass-repo-standards/.github/workflows/python-tests.yml@ca740d88b32fa5dcbc94c41fce2908450c76ed50
     with:
-      standards-ref: 26946e9075503633c16fb1b0f7380d0101ed7b45
+      standards-ref: ca740d88b32fa5dcbc94c41fce2908450c76ed50
       domain: melk_light
       python-versions: '["3.14"]'
       requirements: requirements_test.txt
@@ -25,9 +25,9 @@ jobs:
       minimum-packages: '["blesession"]'
       ha-components: bluetooth bluetooth_adapters usb
   minimum:
-    uses: eigger/hass-repo-standards/.github/workflows/python-tests.yml@26946e9075503633c16fb1b0f7380d0101ed7b45
+    uses: eigger/hass-repo-standards/.github/workflows/python-tests.yml@ca740d88b32fa5dcbc94c41fce2908450c76ed50
     with:
-      standards-ref: 26946e9075503633c16fb1b0f7380d0101ed7b45
+      standards-ref: ca740d88b32fa5dcbc94c41fce2908450c76ed50
       domain: melk_light
       python-versions: '["3.13"]'
       requirements: requirements_test_min.txt
