@@ -1,7 +1,8 @@
 # Standards adoption
-
-- Reviewed standards SHA: `ca740d88b32fa5dcbc94c41fce2908450c76ed50`
-- Standard: https://github.com/eigger/hass-repo-standards/tree/ca740d88b32fa5dcbc94c41fce2908450c76ed50
+- 참조 커밋 SHA: 44349ee5621eea5d80e5c427f7a2435d2c2491bb
+- Standards release: v1.0.0
+- Resolved standards SHA: 44349ee5621eea5d80e5c427f7a2435d2c2491bb
+- 표준: https://github.com/eigger/hass-repo-standards/tree/v1.0.0
 - Profile: integration / ha; repository eigger/hass-melk-light; default branch master; domain melk_light.
 - Scope and implementation plan: [docs/adoption-plan.md](docs/adoption-plan.md).
 - Evidence and completion status: [ADOPTION_CHECKLIST.md](ADOPTION_CHECKLIST.md). No approved exceptions.
@@ -10,9 +11,10 @@
 - Product category: lighting, based on the physical RGB MELK light bar and its lighting controls. Category evidence is in .hass-standards.json; no category is inferred merely from platform names.
 - Domain, config-entry data/schema, device identifiers and entity unique IDs remain unchanged. No data migration is needed. Failed writes now surface as service errors; successful writes still represent assumed state without hardware acknowledgement.
 - HACS remains Custom. PR #4 was reviewed and squash merged at 3dabcba755a5d3c41d29a8fb14d6f1b9603777e1. Downloads counts all release assets. ZIP deployment starts with the next separately requested release; no release/tag was created for this adoption.
-- Reviewed release standards SHA: `ca740d88b32fa5dcbc94c41fce2908450c76ed50`
-- Release action retains reviewed release standards SHA fd4162c0b93fbe8e109f99c787773ae09ba157e1 from PR #4; it is scoped independently of the full adoption SHA.
+- The former release-action SHA fd4162c0b93fbe8e109f99c787773ae09ba157e1 from PR #4 is historical evidence only; the current release action uses exact v1.0.0.
 - No imagespec, payload examples, polling coordinator, authentication, options flow or custom services exist; these conditional requirements are N/A.
+
+- ZIP migration note (2026-10-25): the former current-header `Reviewed release standards SHA` ca740d88b32fa5dcbc94c41fce2908450c76ed50 is retired because the release-zip action now also uses exact v1.0.0; its prior evidence remains in this document history and ADOPTION_CHECKLIST.md.
 
 ## Hassfest schema compatibility
 
