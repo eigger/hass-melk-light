@@ -17,7 +17,6 @@ jobs:
       domain: melk_light
       python-versions: '["3.14"]'
       requirements: requirements_test.txt
-      expected-ha-version: 2026.10.2
       test-profile: ha
       pytest-args: tests/components/melk_light/ -v
       dependency-modes: '["current", "minimum"]'
