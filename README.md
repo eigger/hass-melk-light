@@ -12,7 +12,7 @@ Home Assistant custom integration for **MELK Light Bar** (`melk_light`).
 [![Tests](https://img.shields.io/github/actions/workflow/status/eigger/hass-melk-light/tests.yml?branch=master&style=flat&label=Tests)](https://github.com/eigger/hass-melk-light/actions/workflows/tests.yml)
 [![Validate](https://img.shields.io/github/actions/workflow/status/eigger/hass-melk-light/validate.yml?branch=master&style=flat&label=Validate)](https://github.com/eigger/hass-melk-light/actions/workflows/validate.yml)
 [![License](https://img.shields.io/github/license/eigger/hass-melk-light?style=flat)](LICENSE)
-[![Downloads](https://img.shields.io/github/downloads/eigger/hass-melk-light/total?style=flat&color=41BDF5&label=Downloads)](https://github.com/eigger/hass-melk-light/releases)
+[![Downloads](https://img.shields.io/github/downloads/eigger/hass-melk-light/latest/total?style=flat&color=41BDF5&label=Downloads)](https://github.com/eigger/hass-melk-light/releases)
 <!-- hass-standards:badges:end -->
 <!-- hass-standards:header:end -->
 
