@@ -16,6 +16,8 @@
 <!-- hass-standards:badges:end -->
 <!-- hass-standards:header:end -->
 
+![MELK Light](custom_components/melk_light/brand/logo.png)
+
 <table>
   <tr>
     <td align="center" valign="bottom">
