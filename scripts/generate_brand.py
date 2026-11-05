@@ -2,13 +2,15 @@
 
 The artwork preserves the original minimalist MELK Light Bar concept on a dark
 navy rounded square: a sleek vertical cyan glowing light bar hovering above a
-clean white horizontal base stand. Drawn from geometric primitives at 4x scale
-and downsampled, so no source image, external font file, or network access is
-needed. Run with Pillow 12.3.0 for reproducible PNGs.
+clean white horizontal base stand, accompanied by a crisp Bluetooth rune symbol.
+Drawn from geometric primitives at 4x scale and downsampled, so no source image,
+external font file, or network access is needed. Run with Pillow 12.3.0 for
+reproducible PNGs.
 """
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -23,6 +25,75 @@ CYAN = "#38bdf8"
 CYAN_BRIGHT = "#bae6fd"
 STAND_WHITE = "#edf2f7"
 WORDMARK = "#0ea5e9"
+
+
+def _draw_thick_polyline(
+    draw: ImageDraw.ImageDraw,
+    pts: list[tuple[float, float]],
+    width: float,
+    color: str,
+) -> None:
+    """Draw a thick polyline with perfectly round caps and joins."""
+    r = width / 2.0
+    for x, y in pts:
+        draw.ellipse([x - r, y - r, x + r, y + r], fill=color)
+    for (x1, y1), (x2, y2) in zip(pts, pts[1:], strict=False):
+        dx = x2 - x1
+        dy = y2 - y1
+        length = math.hypot(dx, dy)
+        if length == 0:
+            continue
+        nx = -dy / length * r
+        ny = dx / length * r
+        draw.polygon(
+            [
+                (x1 + nx, y1 + ny),
+                (x2 + nx, y2 + ny),
+                (x2 - nx, y2 - ny),
+                (x1 - nx, y1 - ny),
+            ],
+            fill=color,
+        )
+
+
+def _draw_bluetooth_rune(
+    draw: ImageDraw.ImageDraw,
+    cx: float,
+    cy: float,
+    half_h: float,
+    w_right: float,
+    w_left: float,
+    stroke: float,
+    color: str,
+    s: int,
+) -> None:
+    """Draw a clean geometric Bluetooth rune centered at (cx, cy)."""
+    _draw_thick_polyline(
+        draw,
+        [(cx * s, (cy - half_h) * s), (cx * s, (cy + half_h) * s)],
+        stroke * s,
+        color,
+    )
+    _draw_thick_polyline(
+        draw,
+        [
+            (cx * s, (cy - half_h) * s),
+            ((cx + w_right) * s, (cy - half_h * 0.5) * s),
+            ((cx - w_left) * s, (cy + half_h * 0.5) * s),
+        ],
+        stroke * s,
+        color,
+    )
+    _draw_thick_polyline(
+        draw,
+        [
+            (cx * s, (cy + half_h) * s),
+            ((cx + w_right) * s, (cy + half_h * 0.5) * s),
+            ((cx - w_left) * s, (cy - half_h * 0.5) * s),
+        ],
+        stroke * s,
+        color,
+    )
 
 
 def draw_icon() -> Image.Image:
@@ -47,6 +118,19 @@ def draw_icon() -> Image.Image:
 
     # 4. Clean horizontal white pill stand at the bottom (with navy separation gap).
     d.rounded_rectangle(box(172, 412, 340, 440), radius=14 * s, fill=STAND_WHITE)
+
+    # 5. Crisp Bluetooth rune badge in the upper-right area.
+    _draw_bluetooth_rune(
+        d,
+        cx=392.0,
+        cy=124.0,
+        half_h=44.0,
+        w_right=30.0,
+        w_left=28.0,
+        stroke=12.0,
+        color=CYAN,
+        s=s,
+    )
 
     return image.resize((SIZE, SIZE), Image.Resampling.LANCZOS)
 
