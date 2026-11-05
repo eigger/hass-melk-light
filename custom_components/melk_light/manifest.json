@@ -1,14 +1,28 @@
 {
-    "domain": "melk_light",
-    "name": "MELK Light Bar",
-    "bluetooth": [{"connectable": true, "local_name": "MELK-*"}],
-    "categories": ["lighting"],
-    "codeowners": ["@eigger"],
-    "config_flow": true,
-    "dependencies": ["bluetooth", "bluetooth_adapters"],
-    "documentation": "https://github.com/eigger/hass-melk-light",
-    "iot_class": "assumed_state",
-    "issue_tracker": "https://github.com/eigger/hass-melk-light/issues",
-    "requirements": ["blesession\u003e=0.9.1"],
-    "version": "0.2.2",
+  "domain": "melk_light",
+  "name": "MELK Light Bar",
+  "bluetooth": [
+    {
+      "connectable": true,
+      "local_name": "MELK-*"
+    }
+  ],
+  "categories": [
+    "lighting"
+  ],
+  "codeowners": [
+    "@eigger"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "bluetooth",
+    "bluetooth_adapters"
+  ],
+  "documentation": "https://github.com/eigger/hass-melk-light",
+  "iot_class": "assumed_state",
+  "issue_tracker": "https://github.com/eigger/hass-melk-light/issues",
+  "requirements": [
+    "blesession>=0.9.1"
+  ],
+  "version": "0.2.2"
 }
