@@ -1,5 +1,5 @@
 <!-- hass-standards:header:start -->
-# hass-melk-light
+# MELK Light Bar for Home Assistant
 
 **MELK Light Bar** (`melk_light`)용 Home Assistant 커스텀 통합입니다.
 
@@ -33,11 +33,19 @@
   </tr>
 </table>
 
-## 기능
+<a name="기능"></a>
+
+## 주요 기능
 
 - Home Assistant Bluetooth를 통한 BLE 검색
 - 조명 제어: 켜기/끄기, 밝기, RGB, 효과(모드)
 - 진단 엔티티: Bluetooth 연결, 명령 소요 시간, 마지막 실패와 오류 횟수
+
+## 요구사항
+
+- **Home Assistant:** 2025.11.0 이상.
+- **Bluetooth:** Bluetooth 어댑터 또는 ESPHome Bluetooth 프록시.
+- **기기:** 지원되는 MELK Light Bar.
 
 ## 설치
 
@@ -45,11 +53,17 @@
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=eigger&repository=hass-melk-light&category=integration)
 <!-- hass-standards:installation:end -->
 
-- HACS를 먼저 설치·설정한 뒤 사용자 지정 저장소로 설치하거나, HA 설정 폴더에 `custom_components/melk_light`를 복사하세요.
-- Home Assistant를 재시작하세요.
-- **설정 → 기기 및 서비스 → 통합구성요소 추가 → MELK Light Bar**에서 추가하세요.
+1. 위 배지를 클릭해 마켓플레이스에서 저장소를 엽니다.
+2. 저장소를 직접 추가하려면 **설정 → 마켓플레이스 → 링크에서 추가**에서 <https://github.com/eigger/hass-melk-light>을 입력합니다. 안내가 표시되면 GitHub 계정을 연결합니다.
+3. **설치**를 선택합니다. 재시작 안내가 표시되면 Home Assistant를 재시작합니다. 설치가 끝나면 [설정](#설정)으로 이동합니다.
 
-## 참고
+## 설정
+
+**설정 → 기기 및 서비스 → 통합 추가 → MELK Light Bar**를 선택합니다.
+
+<a name="참고"></a>
+
+## 중요 제한사항
 
 - 안정성과 수신 범위를 위해 ESPHome Bluetooth 프록시를 권장합니다. [Bluetooth 프록시 설정](https://github.com/eigger/blesession/blob/main/docs/bluetooth.ko.md)과 [문제 해결](docs/troubleshooting.ko.md)을 참고하세요.
 - 명령 전 조명 전원을 켜고 다른 제어 앱의 연결을 종료하세요. 기기는 명령 수신 확인을 보내지 않으므로, 표시 상태는 성공한 쓰기를 바탕으로 추정합니다.

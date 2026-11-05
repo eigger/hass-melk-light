@@ -1,5 +1,5 @@
 <!-- hass-standards:header:start -->
-# hass-melk-light
+# MELK Light Bar for Home Assistant
 
 Home Assistant custom integration for **MELK Light Bar** (`melk_light`).
 
@@ -39,17 +39,29 @@ Home Assistant custom integration for **MELK Light Bar** (`melk_light`).
 - Light control: on/off, brightness, RGB, effect(mode)
 - Diagnostic entities: Bluetooth connection, command duration, last failure and error count
 
+## Requirements
+
+- **Home Assistant:** 2025.11.0 or later.
+- **Bluetooth:** A Bluetooth adapter or ESPHome Bluetooth proxy.
+- **Device:** A compatible MELK Light Bar.
+
 ## Installation
 
 <!-- hass-standards:installation:start -->
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=eigger&repository=hass-melk-light&category=integration)
 <!-- hass-standards:installation:end -->
 
-- Install and configure HACS first, then install with HACS (custom repository), or copy `custom_components/melk_light` into your HA config directory.
-- Restart Home Assistant.
-- Add the integration: **Settings → Devices & Services → Add Integration → MELK Light Bar**
+1. Click the badge above to open the repository in Marketplace.
+2. If you need to add it yourself, go to **Settings → Marketplace → Add from link** and enter <https://github.com/eigger/hass-melk-light>. Connect GitHub if prompted.
+3. Select **Install**. Restart Home Assistant if prompted, then continue to [Configuration](#configuration).
 
-## Notes
+## Configuration
+
+Open **Settings → Devices & services → Add integration → MELK Light Bar**.
+
+<a name="notes"></a>
+
+## Important limitations
 
 - BLE is best with an ESPHome Bluetooth proxy for stability/range. See [Bluetooth proxy setup](https://github.com/eigger/blesession/blob/main/docs/bluetooth.md) and [troubleshooting](docs/troubleshooting.md).
 - Turn on the light bar and disconnect other controlling apps before sending commands. State is assumed from successful writes; the device does not acknowledge commands.
