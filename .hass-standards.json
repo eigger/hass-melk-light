@@ -21,7 +21,7 @@
     "README.ko.md": "#설치"
   },
   "readme": {
-    "title": "hass-melk-light",
+    "title": "MELK Light Bar for Home Assistant",
     "descriptions": {
       "en": "Home Assistant custom integration for **MELK Light Bar** (`melk_light`).",
       "ko": "**MELK Light Bar** (`melk_light`)용 Home Assistant 커스텀 통합입니다."
