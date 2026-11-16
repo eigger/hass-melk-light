@@ -1,8 +1,8 @@
 # Standards adoption
-- 참조 커밋 SHA: 66ab62181edb0a4a1bc0fe53209905b8f637633c
-- Standards release: v1.2.0
-- Resolved standards SHA: 66ab62181edb0a4a1bc0fe53209905b8f637633c
-- 표준: https://github.com/eigger/hass-repo-standards/tree/v1.2.0
+- 참조 커밋 SHA: 8a98c61e67051c8f824ecf8c0950b3f9c0e95250
+- Standards release: v1.3.0
+- Resolved standards SHA: 8a98c61e67051c8f824ecf8c0950b3f9c0e95250
+- 표준: https://github.com/eigger/hass-repo-standards/tree/v1.3.0
 - Profile: integration / ha; repository eigger/hass-melk-light; default branch master; domain melk_light.
 - Scope and implementation plan: [docs/adoption-plan.md](docs/adoption-plan.md).
 - Evidence and completion status: [ADOPTION_CHECKLIST.md](ADOPTION_CHECKLIST.md). No approved exceptions.
